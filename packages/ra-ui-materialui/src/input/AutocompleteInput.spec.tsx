@@ -173,10 +173,34 @@ describe('<AutocompleteInput />', () => {
         expect(queryByDisplayValue('**foo**')).toBeNull();
     });
 
-    it('should show the suggestions on focus', async () => {
+    it('should show the suggestions on focus if value is not null and there is an alternative', async () => {
+        const { getByLabelText, queryByDisplayValue } = render(
+            <Form
+                onSubmit={jest.fn()}
+                initialValues={{ role: 1 }}
+                render={() => (
+                    <AutocompleteInput
+                        {...defaultProps}
+                        choices={[
+                            { id: 1, name: 'foo' },
+                            { id: 2, name: 'foo alt' },
+                        ]}
+                    />
+                )}
+            />
+        );
+
+        const input = getByLabelText('resources.users.fields.role');
+        fireEvent.focus(input);
+        await waitForDomChange();
+        expect(queryByDisplayValue('foo')).not.toBeNull();
+    });
+
+    it('should not show the suggestions on focus if value is null', async () => {
         const { getByLabelText, queryByText } = render(
             <Form
                 onSubmit={jest.fn()}
+                initialValues={{ role: null }}
                 render={() => (
                     <AutocompleteInput
                         {...defaultProps}
@@ -189,20 +213,21 @@ describe('<AutocompleteInput />', () => {
         const input = getByLabelText('resources.users.fields.role');
         fireEvent.focus(input);
         await waitForDomChange();
-        expect(queryByText('foo')).not.toBeNull();
+        expect(queryByText('foo')).toBeNull();
     });
 
     it('should respect shouldRenderSuggestions over default if passed in', async () => {
         const { getByLabelText, queryByText } = render(
             <Form
                 onSubmit={jest.fn()}
+                initialValues={{ role: 1 }}
                 render={() => (
                     <AutocompleteInput
                         {...defaultProps}
                         shouldRenderSuggestions={() => false}
                         choices={[
                             { id: 1, name: 'bar' },
-                            { id: 2, name: 'foo' },
+                            { id: 2, name: 'bar alt' },
                         ]}
                     />
                 )}
@@ -212,7 +237,7 @@ describe('<AutocompleteInput />', () => {
         const input = getByLabelText('resources.users.fields.role');
         fireEvent.focus(input);
         await waitForDomChange();
-        expect(queryByText('foo')).toBeNull();
+        expect(queryByText('bar alt')).toBeNull();
     });
 
     describe('Fix issue #1410', () => {
@@ -326,41 +351,45 @@ describe('<AutocompleteInput />', () => {
             expect(input.value).toEqual('foo');
         });
 
-        it('should show the suggestions when the input value is null and the input is focussed and choices arrived late', () => {
-            const { getByLabelText, queryByText, rerender } = render(
+        it('should show the suggestions when the input value is not null and the input is focussed and choices arrived late', async () => {
+            const { getByLabelText, queryAllByText, rerender } = render(
                 <Form
+                    initialValues={{ role: 1 }}
                     onSubmit={jest.fn()}
                     render={() => <AutocompleteInput {...defaultProps} />}
                 />
             );
 
-            const input = getByLabelText('resources.users.fields.role');
-            fireEvent.focus(input);
-
             rerender(
                 <Form
+                    initialValues={{ role: 1 }}
                     onSubmit={jest.fn()}
                     render={() => (
                         <AutocompleteInput
                             {...defaultProps}
                             choices={[
                                 { id: 1, name: 'bar' },
-                                { id: 2, name: 'foo' },
+                                { id: 2, name: 'bar alt' },
                             ]}
                         />
                     )}
                 />
             );
+
+            const input = getByLabelText('resources.users.fields.role');
+            fireEvent.focus(input);
+            await waitForDomChange();
+
             expect(
-                queryByText('foo', {
+                queryAllByText('bar', {
                     selector: '[role="option"] *',
                 })
-            ).not.toBeNull();
+            ).toHaveLength(2);
             expect(
-                queryByText('bar', {
+                queryAllByText('alt', {
                     selector: '[role="option"] *',
                 })
-            ).not.toBeNull();
+            ).toHaveLength(1);
         });
 
         it('should reset filter when input value changed', () => {
@@ -383,7 +412,7 @@ describe('<AutocompleteInput />', () => {
             );
             const input = getByLabelText('resources.users.fields.role');
             fireEvent.change(input, { target: { value: 'bar' } });
-            expect(setFilter).toHaveBeenCalledTimes(3);
+            expect(setFilter).toHaveBeenCalledTimes(4);
             expect(setFilter).toHaveBeenCalledWith('bar');
 
             rerender(
@@ -402,11 +431,11 @@ describe('<AutocompleteInput />', () => {
                     )}
                 />
             );
-            expect(setFilter).toHaveBeenCalledTimes(5);
+            expect(setFilter).toHaveBeenCalledTimes(6);
             expect(setFilter).toHaveBeenCalledWith('');
         });
 
-        it('should allow customized rendering of suggesting item', () => {
+        it('should allow customized rendering of suggesting item', async () => {
             const SuggestionItem = ({ record }: { record?: any }) => (
                 <div aria-label={record.name} />
             );
@@ -414,6 +443,7 @@ describe('<AutocompleteInput />', () => {
             const { getByLabelText, queryByLabelText } = render(
                 <Form
                     onSubmit={jest.fn()}
+                    initialValues={{ role: 1 }}
                     render={() => (
                         <AutocompleteInput
                             {...defaultProps}
@@ -421,7 +451,7 @@ describe('<AutocompleteInput />', () => {
                             matchSuggestion={(filter, choice) => true}
                             choices={[
                                 { id: 1, name: 'bar' },
-                                { id: 2, name: 'foo' },
+                                { id: 2, name: 'bar alt' },
                             ]}
                         />
                     )}
@@ -430,8 +460,9 @@ describe('<AutocompleteInput />', () => {
 
             const input = getByLabelText('resources.users.fields.role');
             fireEvent.focus(input);
+            await waitForDomChange();
             expect(queryByLabelText('bar')).not.toBeNull();
-            expect(queryByLabelText('foo')).not.toBeNull();
+            expect(queryByLabelText('bar alt')).not.toBeNull();
         });
     });
 

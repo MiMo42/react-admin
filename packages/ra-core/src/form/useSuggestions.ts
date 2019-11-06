@@ -6,16 +6,14 @@ import { useTranslate } from '../i18n';
 /*
  * Returns helper functions for suggestions handling.
  *
- * @param allowEmpty A boolean indicating whether an empty suggestion should be added
  * @param choices An array of available choices
- * @param emptyText The text to use for the empty suggestion. Defaults to an empty string
  * @param emptyValue The value to use for the empty suggestion. Defaults to `null`
  * @param limitChoicesToValue A boolean indicating whether the initial suggestions should be limited to the currently selected one(s)
  * @param matchSuggestion Optional unless `optionText` is a React element. Function which check wether a choice matches a filter. Must return a boolean.
  * @param optionText Either a string defining the property to use to get the choice text, a function or a React element
  * @param optionValue The property to use to get the choice value
  * @param selectedItem The currently selected item. May be an array of selected items
- * @param suggestionLimit The maximum number of suggestions returned, excluding the empty one if `allowEmpty` is `true`
+ * @param suggestionLimit The maximum number of suggestions returned
  * @param translateChoice A boolean indicating whether to option text should be translated
  *
  * @returns An object with helper functions:
@@ -24,9 +22,7 @@ import { useTranslate } from '../i18n';
  * - getSuggestions: A function taking a filter value (string) and returning the matching suggestions
  */
 const useSuggestions = ({
-    allowEmpty,
     choices,
-    emptyText = '',
     emptyValue = null,
     limitChoicesToValue,
     matchSuggestion,
@@ -45,9 +41,7 @@ const useSuggestions = ({
 
     const getSuggestions = useCallback(
         getSuggestionsFactory({
-            allowEmpty,
             choices,
-            emptyText: translate(emptyText, { _: emptyText }),
             emptyValue,
             getChoiceText,
             getChoiceValue,
@@ -59,9 +53,7 @@ const useSuggestions = ({
             suggestionLimit,
         }),
         [
-            allowEmpty,
             choices,
-            emptyText,
             emptyValue,
             getChoiceText,
             getChoiceValue,
@@ -88,8 +80,6 @@ const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $
 
 interface Options extends UseChoicesOptions {
     choices: any[];
-    allowEmpty?: boolean;
-    emptyText?: string;
     emptyValue?: any;
     limitChoicesToValue?: boolean;
     matchSuggestion?: (filter: string) => (suggestion: any) => boolean;
@@ -129,8 +119,6 @@ const defaultMatchSuggestion = getChoiceText => (filter, suggestion) => {
  */
 export const getSuggestionsFactory = ({
     choices = [],
-    allowEmpty,
-    emptyText,
     emptyValue,
     optionText,
     optionValue,
@@ -142,29 +130,37 @@ export const getSuggestionsFactory = ({
     suggestionLimit = 0,
 }) => filter => {
     // When we display the suggestions for the first time and the input
-    // already has a value, we want to display more choices than just the
-    // currently selected one, unless limitChoicesToValue was set to true
+    // already has a value, we want to display more matching choices than just the
+    // currently selected one if available
+    // If there is only one suggestion that matched currently selected item it will be omitted,
+    // unless limitChoicesToValue was set to true
+    // So we display ony selectable choices is user really has an alternative to select.
     if (
         selectedItem &&
         !Array.isArray(selectedItem) &&
         matchSuggestion(filter, selectedItem)
     ) {
-        if (limitChoicesToValue) {
-            return limitSuggestions(
-                choices.filter(
-                    choice =>
-                        getChoiceValue(choice) === getChoiceValue(selectedItem)
-                ),
-                suggestionLimit
-            );
-        }
+        const filteredChoices = choices.filter(choice =>
+            matchSuggestion(filter, choice)
+        );
 
-        return limitSuggestions(
+        const finalChoices = limitSuggestions(
             removeAlreadySelectedSuggestions(selectedItem, getChoiceValue)(
-                choices
+                filteredChoices
             ),
             suggestionLimit
         );
+
+        // Do not display suggestions if the selectedItem is the only choice
+        if (
+            !limitChoicesToValue &&
+            finalChoices.length === 1 &&
+            getChoiceValue(finalChoices[0]) === getChoiceValue(selectedItem)
+        ) {
+            return [];
+        }
+
+        return finalChoices;
     }
 
     const filteredChoices = choices.filter(choice =>
@@ -177,16 +173,6 @@ export const getSuggestionsFactory = ({
         ),
         suggestionLimit
     );
-
-    if (allowEmpty) {
-        const emptySuggestion = {};
-        set(emptySuggestion, optionValue, emptyValue);
-
-        if (typeof optionText !== 'function') {
-            set(emptySuggestion, optionText, emptyText);
-        }
-        return finalChoices.concat(emptySuggestion);
-    }
 
     return finalChoices;
 };

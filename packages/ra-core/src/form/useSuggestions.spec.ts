@@ -55,17 +55,7 @@ describe('getSuggestions', () => {
         ).toEqual(choices.slice(1));
     });
 
-    it('should not filter choices according to the currently selected value if selectedItem is not an array and limitChoicesToValue is false', () => {
-        expect(
-            getSuggestions({
-                ...defaultOptions,
-                limitChoicesToValue: false,
-                selectedItem: choices[0],
-            })('one')
-        ).toEqual(choices);
-    });
-
-    it('should filter choices according to the currently selected value if selectedItem is not an array and limitChoicesToValue is true', () => {
+    it('should not filter choices to show a single match according to the currently selected value if selectedItem is not an array and limitChoicesToValue is true', () => {
         expect(
             getSuggestions({
                 ...defaultOptions,
@@ -74,18 +64,15 @@ describe('getSuggestions', () => {
             })('one')
         ).toEqual([choices[0]]);
     });
-    it('should add emptySuggestion if allowEmpty is true', () => {
+
+    it('should filter choices according to the currently selected value if selectedItem is not an array and limitChoicesToValue is false', () => {
         expect(
             getSuggestions({
                 ...defaultOptions,
-                allowEmpty: true,
-            })('')
-        ).toEqual([
-            { id: 1, value: 'one' },
-            { id: 2, value: 'two' },
-            { id: 3, value: 'three' },
-            { id: null, value: '' },
-        ]);
+                limitChoicesToValue: false,
+                selectedItem: choices[0],
+            })('one')
+        ).toEqual([]);
     });
 
     it('should limit the number of choices', () => {
@@ -100,12 +87,7 @@ describe('getSuggestions', () => {
             getSuggestions({
                 ...defaultOptions,
                 suggestionLimit: 2,
-                allowEmpty: true,
             })('')
-        ).toEqual([
-            { id: 1, value: 'one' },
-            { id: 2, value: 'two' },
-            { id: null, value: '' },
-        ]);
+        ).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
     });
 });

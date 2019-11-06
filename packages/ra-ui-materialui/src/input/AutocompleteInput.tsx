@@ -1,6 +1,7 @@
 import React, {
     useCallback,
     useEffect,
+    useState,
     useRef,
     FunctionComponent,
     useMemo,
@@ -11,12 +12,17 @@ import classNames from 'classnames';
 import get from 'lodash/get';
 import { makeStyles, TextField } from '@material-ui/core';
 import { TextFieldProps } from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
+import ClearIcon from '@material-ui/icons/Clear';
+
 import {
     useInput,
     FieldTitle,
     InputProps,
     useSuggestions,
     warning,
+    useTranslate,
 } from 'ra-core';
 
 import InputHelperText from './InputHelperText';
@@ -93,10 +99,10 @@ interface Options {
 const AutocompleteInput: FunctionComponent<
     InputProps<TextFieldProps & Options> & DownshiftProps<any>
 > = ({
-    allowEmpty,
+    resettable,
     classes: classesOverride,
+    clearAlwaysVisible = true,
     choices = [],
-    emptyText,
     emptyValue,
     format,
     helperText,
@@ -140,6 +146,9 @@ const AutocompleteInput: FunctionComponent<
     );
 
     const classes = useStyles({ classes: classesOverride });
+    const translate = useTranslate();
+
+    const [showClear, setShowClear] = useState(false);
 
     let inputEl = useRef<HTMLInputElement>();
     let anchorEl = useRef<any>();
@@ -172,15 +181,20 @@ const AutocompleteInput: FunctionComponent<
         [choices, optionValue]
     );
 
-    const selectedItem = useMemo(
-        () => getSuggestionFromValue(input.value) || null,
-        [input.value, getSuggestionFromValue]
-    );
+    const [selectedItem, setSelectedItem] = React.useState(null);
+
+    useEffect(() => {
+        // if there are choices available (they may be arrive later)
+        if (choices && choices.length > 0 && input.value) {
+            setSelectedItem(getSuggestionFromValue(input.value) || null);
+        } else {
+            // no selected item as there are no choices yet
+            setSelectedItem(null);
+        }
+    }, [choices, getSuggestionFromValue, input.value]);
 
     const { getChoiceText, getChoiceValue, getSuggestions } = useSuggestions({
-        allowEmpty,
         choices,
-        emptyText,
         emptyValue,
         limitChoicesToValue,
         matchSuggestion,
@@ -213,9 +227,24 @@ const AutocompleteInput: FunctionComponent<
         handleFilterChange('');
 
         // If we have a value, set the filter to its text so that
-        // Downshift displays it correctly
-        setFilterValue(input.value ? getChoiceText(selectedItem) : '');
+        // Downshift displays it correctly.
+        // Assure that we have a selected item to succeed.
+        setFilterValue(
+            input.value ? (selectedItem ? getChoiceText(selectedItem) : '') : ''
+        );
     }, [input.value, handleFilterChange, selectedItem, getChoiceText]);
+
+    const handleClickClearButton = useCallback(
+        event => {
+            event.preventDefault();
+            input.onChange('');
+        },
+        [input]
+    );
+
+    const handleMouseDownClearButton = event => {
+        event.preventDefault();
+    };
 
     const handleChange = useCallback(
         (item: any) => {
@@ -270,7 +299,9 @@ const AutocompleteInput: FunctionComponent<
 
     const handleFocus = useCallback(
         openMenu => event => {
-            openMenu(event);
+            if (input.value && input.value !== '') {
+                openMenu(event);
+            }
             input.onFocus(event);
         },
         [input]
@@ -304,6 +335,8 @@ const AutocompleteInput: FunctionComponent<
                 inputValue,
                 highlightedIndex,
                 openMenu,
+                closeMenu,
+                clearSelection,
             }) => {
                 const isMenuOpen =
                     isOpen && shouldRenderSuggestions(filterValue);
@@ -342,8 +375,61 @@ const AutocompleteInput: FunctionComponent<
                                     onChange!(event as React.ChangeEvent<
                                         HTMLInputElement
                                     >);
+                                    if (event.target.value === '') {
+                                        clearSelection();
+                                    }
                                 },
                                 onFocus,
+                                onClick: event => {
+                                    openMenu();
+                                },
+                                endAdornment: resettable && value && (
+                                    <InputAdornment
+                                        position="end"
+                                        classes={{
+                                            root: rest.select
+                                                ? classes.selectAdornment
+                                                : null,
+                                        }}
+                                    >
+                                        <IconButton
+                                            className={classNames(
+                                                classes.clearButton,
+                                                {
+                                                    [classes.visibleClearButton]:
+                                                        clearAlwaysVisible ||
+                                                        showClear,
+                                                }
+                                            )}
+                                            aria-label={translate(
+                                                'ra.action.clear_input_value'
+                                            )}
+                                            title={translate(
+                                                'ra.action.clear_input_value'
+                                            )}
+                                            disableRipple
+                                            onClick={event => {
+                                                closeMenu();
+                                                handleClickClearButton(event);
+                                            }}
+                                            onMouseDown={
+                                                handleMouseDownClearButton
+                                            }
+                                            disabled={rest.disabled}
+                                        >
+                                            <ClearIcon
+                                                className={classNames(
+                                                    classes.clearIcon,
+                                                    {
+                                                        [classes.visibleClearIcon]:
+                                                            clearAlwaysVisible ||
+                                                            showClear,
+                                                    }
+                                                )}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
                             }}
                             error={!!(touched && error)}
                             label={
@@ -453,6 +539,25 @@ const useStyles = makeStyles(theme => {
         },
         divider: {
             height: theme.spacing(2),
+        },
+        // resettable
+        clearIcon: {
+            height: 16,
+            width: 0,
+        },
+        visibleClearIcon: {
+            width: 16,
+        },
+        clearButton: {
+            height: 24,
+            padding: 0,
+            width: 0,
+        },
+        visibleClearButton: {
+            width: 24,
+        },
+        selectAdornment: {
+            marginRight: 12,
         },
     };
 });
