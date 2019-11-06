@@ -93,10 +93,8 @@ interface Options {
 const AutocompleteArrayInput: FunctionComponent<
     InputProps<TextFieldProps & Options> & DownshiftProps<any>
 > = ({
-    allowEmpty,
     classes: classesOverride,
     choices = [],
-    emptyText,
     emptyValue,
     format,
     helperText,
@@ -177,9 +175,7 @@ const AutocompleteArrayInput: FunctionComponent<
     );
 
     const { getChoiceText, getChoiceValue, getSuggestions } = useSuggestions({
-        allowEmpty,
         choices,
-        emptyText,
         emptyValue,
         limitChoicesToValue,
         matchSuggestion,
@@ -389,6 +385,9 @@ const AutocompleteArrayInput: FunctionComponent<
                                     >);
                                 },
                                 onFocus,
+                                onClick: event => {
+                                    openMenu();
+                                },
                             }}
                             error={!!(touched && error)}
                             label={
