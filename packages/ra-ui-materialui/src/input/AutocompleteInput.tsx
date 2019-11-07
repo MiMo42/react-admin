@@ -149,6 +149,7 @@ const AutocompleteInput: FunctionComponent<
     const translate = useTranslate();
 
     const [showClear, setShowClear] = useState(false);
+    const [hasFocus, setHasFocus] = React.useState(false);
 
     let inputEl = useRef<HTMLInputElement>();
     let anchorEl = useRef<any>();
@@ -292,31 +293,37 @@ const AutocompleteInput: FunctionComponent<
             // If we had a value before, set the filter back to its text so that
             // Downshift displays it correctly
             setFilterValue(input.value ? getChoiceText(selectedItem) : '');
+            setHasFocus(false);
+            setShowClear(false);
             input.onBlur(event);
         },
         [getChoiceText, handleFilterChange, input, selectedItem]
     );
 
+    const shouldRenderSuggestions = useCallback(
+        val => {
+            if (
+                shouldRenderSuggestionsOverride !== undefined &&
+                typeof shouldRenderSuggestionsOverride === 'function'
+            ) {
+                return shouldRenderSuggestionsOverride(val);
+            }
+
+            if (rest.disabled) return false;
+
+            return true;
+        },
+        [rest.disabled, shouldRenderSuggestionsOverride]
+    );
+
     const handleFocus = useCallback(
         openMenu => event => {
-            if (input.value && input.value !== '') {
-                openMenu(event);
-            }
             input.onFocus(event);
+            setHasFocus(true);
+            setShowClear(true);
         },
         [input]
     );
-
-    const shouldRenderSuggestions = val => {
-        if (
-            shouldRenderSuggestionsOverride !== undefined &&
-            typeof shouldRenderSuggestionsOverride === 'function'
-        ) {
-            return shouldRenderSuggestionsOverride(val);
-        }
-
-        return true;
-    };
 
     return (
         <Downshift
@@ -351,6 +358,7 @@ const AutocompleteInput: FunctionComponent<
                 } = getInputProps({
                     onBlur: handleBlur,
                     onFocus: handleFocus(openMenu),
+                    disabled: rest.disabled,
                 });
                 const suggestions = getSuggestions(filterValue);
 
@@ -381,7 +389,14 @@ const AutocompleteInput: FunctionComponent<
                                 },
                                 onFocus,
                                 onClick: event => {
-                                    openMenu();
+                                    if (
+                                        !isMenuOpen &&
+                                        rest.disabled !== true &&
+                                        shouldRenderSuggestions(filterValue) &&
+                                        hasFocus
+                                    ) {
+                                        openMenu();
+                                    }
                                 },
                                 endAdornment: resettable && value && (
                                     <InputAdornment
@@ -485,6 +500,7 @@ const AutocompleteInput: FunctionComponent<
                                     getSuggestionText={getChoiceText}
                                     {...getItemProps({
                                         item: suggestion,
+                                        disabled: rest.disabled,
                                     })}
                                 />
                             ))}
