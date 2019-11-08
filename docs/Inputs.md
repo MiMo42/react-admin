@@ -183,7 +183,7 @@ Ex. `<AutocompleteInput shouldRenderSuggestions={(val) => { return val.trim().le
 **Tip**: If you want to populate the `choices` attribute with a list of related records, you should decorate `<AutocompleteInput>` with [`<ReferenceInput>`](#referenceinput), and leave the `choices` empty:
 
 ```jsx
-import { AutocompleteInput, ReferenceInput } from 'react-admin'
+import { AutocompleteInput, ReferenceInput } from 'react-admin';
 
 <ReferenceInput label="Post" source="post_id" reference="posts">
     <AutocompleteInput optionText="title" />
@@ -197,7 +197,7 @@ Lastly, would you need to override the props of the suggestions container (a `Po
 <AutocompleteInput source="category" options={{
     suggestionsContainerProps: {
         disablePortal: true,
-}} />
+}}} />
 ```
 {% endraw %}
 
@@ -215,7 +215,7 @@ Lastly, would you need to override the props of the suggestions container (a `Po
 | `optionValue` | Optional | `string` | `id` | Fieldname of record containing the value to use as input value  |
 | `optionText` | Optional | <code>string &#124; Function</code> | `name` | Fieldname of record to display in the suggestion item or function which accepts the correct record as argument (`(record)=> {string}`) |
 | `resource` | Required | `string` | - | The resource working on. This field is passed down by wrapped components like `Create` and `Edit`.   |
-| `setFilter` | Optional | `Function` | null | A callback to inform the `searchText` has changed and new `choices` can be retrieved based on this `searchText`. Signature `searchText => void`. This function is automatically setup when using `ReferenceInput`.  |
+| `setFilter` | Optional | `Function` | `null` | A callback to inform the `searchText` has changed and new `choices` can be retrieved based on this `searchText`. Signature `searchText => void`. This function is automatically setup when using `ReferenceInput`.  |
 | `source` | Required |  `string` | - | Name of field to edit, its type should match the type retrieved from `optionValue`  |
 | `shouldRenderSuggestions` | Optional | Function | `() => true` | A function that returns a `boolean` to determine whether or not suggestions are rendered. Use this when working with large collections of data to improve performance and user experience. This function is passed into the underlying react-autosuggest component. Ex.`(value) => value.trim() > 2` |
 
@@ -288,7 +288,7 @@ Lastly, `<AutocompleteArrayInput>` renders a [material-ui-chip-input](https://gi
 **Tip**: If you want to populate the `choices` attribute with a list of related records, you should decorate `<AutocompleteArrayInput>` with [`<ReferenceArrayInput>`](#referenceinput), and leave the `choices` empty:
 
 ```jsx
-import { AutocompleteArrayInput, ReferenceArrayInput } from 'react-admin'
+import { AutocompleteArrayInput, ReferenceArrayInput } from 'react-admin';
 
 <ReferenceArrayInput label="Tags" reference="tags" source="tags">
     <AutocompleteArrayInput />
@@ -302,7 +302,7 @@ If you need to override the props of the suggestions container (a `Popper` eleme
 <AutocompleteArrayInput source="category" options={{
     suggestionsContainerProps: {
         disablePortal: true,
-}} />
+}}} />
 ```
 {% endraw %}
 
@@ -320,9 +320,9 @@ If you need to override the props of the suggestions container (a `Popper` eleme
 | `optionValue` | Optional | `string` | `id` | Fieldname of record containing the value to use as input value  |
 | `optionText` | Optional | <code>string &#124; Function</code> | `name` | Fieldname of record to display in the suggestion item or function which accepts the current record as argument (`(record)=> {string}`) |
 | `resource` | Required | `string` | - | The resource working on. This field is passed down by wrapped components like `Create` and `Edit`.   |
-| `setFilter` | Optional | `Function` | null | A callback to inform the `searchText` has changed and new `choices` can be retrieved based on this `searchText`. Signature `searchText => void`. This function is automatically setup when using `ReferenceInput`.  |
+| `setFilter` | Optional | `Function` | `null` | A callback to inform the `searchText` has changed and new `choices` can be retrieved based on this `searchText`. Signature `searchText => void`. This function is automatically setup when using `ReferenceInput`.  |
 | `source` | Required |  `string` | - | Name of field to edit, its type should match the type retrieved from `optionValue`  |
-| `suggestionLimit` | Optional | Number | null | Limits the numbers of suggestions that are shown in the dropdown list |
+| `suggestionLimit` | Optional | Number | `null` | Limits the numbers of suggestions that are shown in the dropdown list |
 | `shouldRenderSuggestions` | Optional | Function | `() => true` | A function that returns a `boolean` to determine whether or not suggestions are rendered. Use this when working with large collections of data to improve performance and user experience. This function is passed into the underlying react-autosuggest component. Ex.`(value) => value.trim() > 2` |
 
 ## `<BooleanInput>` and `<NullableBooleanInput>`
@@ -361,7 +361,7 @@ import FavoriteIcon from '@material-ui/icons/Favorite';
 
 Refer to [Material UI Switch documentation](https://material-ui.com/api/switch) for more details.
 
-`<NullableBooleanInput />` renders as a dropdown list, allowing to choose between true, false, and null values.
+`<NullableBooleanInput />` renders as a dropdown list, allowing to choose between `true`, `false`, and `null` values.
 
 ```jsx
 import { NullableBooleanInput } from 'react-admin';
@@ -636,7 +636,7 @@ Refer to [Material UI RadioGroup documentation](https://material-ui.com/api/radi
 **Tip**: If you want to populate the `choices` attribute with a list of related records, you should decorate `<RadioButtonGroupInput>` with [`<ReferenceInput>`](#referenceinput), and leave the `choices` empty:
 
 ```jsx
-import { RadioButtonGroupInput, ReferenceInput } from 'react-admin'
+import { RadioButtonGroupInput, ReferenceInput } from 'react-admin';
 
 <ReferenceInput label="Author" source="author_id" reference="authors">
     <RadioButtonGroupInput optionText="last_name" />
@@ -671,8 +671,8 @@ This means you can use `<ReferenceArrayInput>` with [`<SelectArrayInput>`](#sele
 
 The component expects a `source` and a `reference` attributes. For instance, to make the `tag_ids` for a `post` editable:
 
-```js
-import { ReferenceArrayInput, SelectArrayInput } from 'react-admin'
+```jsx
+import { ReferenceArrayInput, SelectArrayInput } from 'react-admin';
 
 <ReferenceArrayInput source="tag_ids" reference="tags">
     <SelectArrayInput optionText="name" />
@@ -683,18 +683,18 @@ import { ReferenceArrayInput, SelectArrayInput } from 'react-admin'
 
 **Note**: You **must** add a `<Resource>` for the reference resource - react-admin needs it to fetch the reference data. You can omit the list prop in this reference if you want to hide it in the sidebar menu.
 
-```js
+```jsx
 <Admin dataProvider={myDataProvider}>
     <Resource name="posts" list={PostList} edit={PostEdit} />
     <Resource name="tags" />
 </Admin>
 ```
 
-Set the `allowEmpty` prop when you want to add an empty choice with a value of null in the choices list.
+Set the `allowEmpty` prop when you want to add an empty choice with a value of `null` in the choices list.
 Disabling `allowEmpty` does not mean that the input will be required. If you want to make the input required, you must add a validator as indicated in [Validation Documentation](./CreateEdit.md#validation). Enabling the `allowEmpty` props just adds an empty choice (with `null` value) on top of the options, and makes the value nullable.
 
-```js
-import { ReferenceArrayInput, SelectArrayInput } from 'react-admin'
+```jsx
+import { ReferenceArrayInput, SelectArrayInput } from 'react-admin';
 
 <ReferenceArrayInput source="tag_ids" reference="tags" allowEmpty>
     <SelectArrayInput optionText="name" />
@@ -706,7 +706,7 @@ import { ReferenceArrayInput, SelectArrayInput } from 'react-admin'
 You can tweak how this component fetches the possible values using the `perPage`, `sort`, and `filter` props.
 
 {% raw %}
-```js
+```jsx
 // by default, fetches only the first 25 values. You can extend this limit
 // by setting the `perPage` prop.
 <ReferenceArrayInput
@@ -745,7 +745,7 @@ This means you can use `<ReferenceInput>` with any of [`<SelectInput>`](#selecti
 The component expects a `source` and a `reference` attributes. For instance, to make the `post_id` for a `comment` editable:
 
 ```jsx
-import { ReferenceInput, SelectInput } from 'react-admin'
+import { ReferenceInput, SelectInput } from 'react-admin';
 
 <ReferenceInput label="Post" source="post_id" reference="posts">
     <SelectInput optionText="title" />
@@ -765,11 +765,11 @@ import { ReferenceInput, SelectInput } from 'react-admin'
 
 **Tip**: Why does `<ReferenceInput>` use the `GET_MANY` verb with a single value `[id]` instead of `GET_ONE` to fetch the record for the current value? Because when there are many `<ReferenceInput>` for the same resource in a form (for instance when inside an `<ArrayInput>`), react-admin *aggregates* the calls to `GET_MANY` into a single one with `[id1, id2, ...)]`. This speeds up the UI and avoids hitting the API too much.
 
-Set the `allowEmpty` prop when you want to add an empty choice with a value of null in the choices list.
+Set the `allowEmpty` prop when you want to add an empty choice with a value of `null` in the choices list.
 Disabling `allowEmpty` does not mean that the input will be required. If you want to make the input required, you must add a validator as indicated in [Validation Documentation](./CreateEdit.md#validation). Enabling the `allowEmpty` props just adds an empty choice (with `null` value) on top of the options, and makes the value nullable.
 
 ```jsx
-import { ReferenceInput, SelectInput } from 'react-admin'
+import { ReferenceInput, SelectInput } from 'react-admin';
 
 <ReferenceInput label="Post" source="post_id" reference="posts" allowEmpty>
     <SelectInput optionText="title" />
@@ -875,7 +875,7 @@ You can customize the rich text editor toolbar using the `toolbar` attribute, as
 
 If you need more customization, you can access the quill object through the `configureQuill` callback that will be called just after its initialization.
 
-```js
+```jsx
 const configureQuill = quill => quill.getModule('toolbar').addHandler('bold', function (value) {
     this.quill.format('bold', value)
 });
@@ -974,7 +974,7 @@ Refer to [Material UI Select documentation](https://material-ui.com/api/select) 
 **Tip**: If you want to populate the `choices` attribute with a list of related records, you should decorate `<SelectInput>` with [`<ReferenceInput>`](#referenceinput), and leave the `choices` empty:
 
 ```jsx
-import { SelectInput, ReferenceInput } from 'react-admin'
+import { SelectInput, ReferenceInput } from 'react-admin';
 
 <ReferenceInput label="Author" source="author_id" reference="authors">
     <SelectInput optionText="last_name" />
@@ -1013,7 +1013,7 @@ const choices = [
 
 To let users choose several values in a list using a dropdown, use `<SelectArrayInput>`. It renders using [Material ui's `<Select>`](https://material-ui.com/api/select). Set the `choices` attribute to determine the options (with `id`, `name` tuples):
 
-```js
+```jsx
 import { SelectArrayInput } from 'react-admin';
 
 <SelectArrayInput label="Tags" source="categories" choices={[
@@ -1063,7 +1063,7 @@ const choices = [
 Lastly, use the `options` attribute if you want to override any of the `<Select>` attributes:
 
 {% raw %}
-```js
+```jsx
 <SelectArrayInput source="category" options={{ fullWidth: true }} />
 ```
 {% endraw %}

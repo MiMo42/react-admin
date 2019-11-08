@@ -298,6 +298,15 @@ const AutocompleteArrayInput: FunctionComponent<
         [input]
     );
 
+    const handleClick = useCallback(
+        openMenu => event => {
+            if (event.target === inputEl.current) {
+                openMenu(event);
+            }
+        },
+        []
+    );
+
     const shouldRenderSuggestions = val => {
         if (
             shouldRenderSuggestionsOverride !== undefined &&
@@ -339,6 +348,7 @@ const AutocompleteArrayInput: FunctionComponent<
                 } = getInputProps({
                     onBlur: handleBlur,
                     onFocus: handleFocus(openMenu),
+                    onClick: handleClick(openMenu),
                     onKeyDown: handleKeyDown,
                 });
                 return (
